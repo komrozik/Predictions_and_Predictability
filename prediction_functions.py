@@ -12,6 +12,11 @@ There is no guarantee therefore that the comments represent the Code.
 After all i still read over them and checked if they are correct.
 '''
 
+def f(m,b,start,end):
+    values = m*np.arange(start,end,1)+b
+    return values
+
+
 
 def climatology_pred(df, start_year, end_year, window_length=30, variable="Tropical Storms"):
     """
