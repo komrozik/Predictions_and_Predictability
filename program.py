@@ -44,6 +44,8 @@ def f(m,b,start,end):
     values = m*np.arange(start,end,1)+b
     return values
 
+def rmse(predictions, targets):
+    return np.sqrt(((predictions - targets) ** 2).mean())
 
 #-------------------------
 # Plotting
@@ -54,40 +56,58 @@ def f(m,b,start,end):
 
 start_year = 1850
 end_year = 2025
-window_length = 10
+window_length = 5
 num_ly = 10
 predict,starts = pf.linear_reg_pred(df,start_year,end_year,window_length = window_length)
 correlation = []
+rmses = []
 
-gs_kw = dict(width_ratios=[2.5, 1], height_ratios=[1, 2])
-fig, axd = plt.subplot_mosaic([['upper left', 'right'],
-                               ['lower left', 'right']],
+gs_kw = dict(width_ratios=[2.5, 1])
+fig, axd = plt.subplot_mosaic([['left', 'right']],
                               gridspec_kw=gs_kw, figsize=(10, 4),
                               layout="constrained"
                               ,dpi = 300)
 
-axd["upper left"].plot(df["Year"],df["Tropical Storms"], label = "Data")
-axd["upper left"].set_xlabel("Year")
-axd["upper left"].set_ylabel("Number of Events")
-axd["upper left"].xaxis.set_visible(False)
-axd["upper left"].legend()
+
+# axd["left"].set_xlabel("Year")
+# axd["left"].set_ylabel("Number of Events")
+# axd["left"].xaxis.set_visible(False)
+# axd["left"].legend()
 
 
-for i in np.arange(5):
+for i in np.arange(window_length,window_length+5,1):
     ly_i = [prediction[i] for prediction in predict]
-    correlation.append(np.corrcoef(ly_i,df["Tropical Storms"][0:len(ly_i)])[0,1])
-    axd["lower left"].plot(np.arange(len(ly_i))+starts[i],ly_i, label = f"Lead Year {i}", alpha = 1-(i*2)/10)
-axd["lower left"].set_xlabel("Year")
-axd["lower left"].set_ylabel("Number of Events")
-axd["lower left"].legend()
+    correlation.append(np.corrcoef(ly_i[0:-i],df["Tropical Storms"][i:len(ly_i)])[0,1])
+    rmses.append(rmse(ly_i[0:-i],df["Tropical Storms"][i:len(ly_i)]))
+    axd["left"].plot(np.arange(len(ly_i))+starts[i],ly_i, label = f"Lead Year {i-window_length}", alpha = 1-((i-window_length)*2)/10)
+axd["left"].set_xlabel("Year")
+axd["left"].set_ylabel("Number of Events")
+
+axd["left"].plot(df["Year"],df["Tropical Storms"], label = "Data", color = "red")
+
+axd["left"].legend()
 
 
-axd["right"].scatter(np.arange(len(correlation)),correlation)
+
+color = 'tab:blue'
+axd["right"].plot(np.arange(len(correlation)),correlation,color=color,marker = "o")
 axd["right"].set_xlabel("Lead Year")
-axd["right"].set_ylabel("Pearson Correlation")
+axd["right"].set_ylabel("Pearson Correlation",color = color)
+axd["right"].tick_params(axis='y', labelcolor=color)
+
+ax2 = axd["right"].twinx()  # instantiate a second axes that shares the same x-axis
+
+color = 'tab:orange'
+ax2.set_ylabel('RMSE',color = color)  # we already handled the x-label with ax1
+ax2.plot(np.arange(len(rmses)),rmses,color = color,marker = "o")
+ax2.tick_params(axis='y', labelcolor=color)
 #axd["right"].legend()
 
-fig.suptitle('Data and Lead Year Analysis for linear regression Forecast')
+fig.suptitle(f'Data and Lead Year Analysis for linear regression Forecast \n Training with {window_length} Years')
 
-plt.savefig(f"final_plots/pdf/Lead_year_regression_forecast.pdf")
-plt.savefig(f"final_plots/jpg/Lead_year_regression_forecast.jpg")
+
+plt.savefig(f"plots/Lead_year_regression_forecast_{window_length}.pdf")
+plt.savefig(f"plots/Lead_year_regression_forecast_{window_length}.jpg")
+
+plt.savefig(f"final_plots/pdf/Lead_year_regression_forecast_{window_length}.pdf")
+plt.savefig(f"final_plots/jpg/Lead_year_regression_forecast_{window_length}.jpg")

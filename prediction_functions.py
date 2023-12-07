@@ -58,7 +58,7 @@ def climatology_pred(df, start_year, end_year, window_length=30, variable="Tropi
 
 
 
-def linear_reg_pred(df, start_year, end_year, window_length=30, variable="Tropical Storms"):
+def linear_reg_pred(df, start_year, end_year, window_length=30, duration = 30, variable="Tropical Storms"):
     """
     Predicts future values using linear regression for a specified variable over a range of years within a DataFrame.
 
@@ -68,6 +68,7 @@ def linear_reg_pred(df, start_year, end_year, window_length=30, variable="Tropic
     - end_year (int): Ending year for the analysis.
     - window_length (int, optional): Length of the window used for linear regression. Default is 30.
     - variable (str, optional): The column name in the DataFrame representing the variable for prediction. Default is "Tropical Storms".
+    - duration: 
 
     Returns:
     - predictions (list): List of predicted values using linear regression for the specified variable within each window.
@@ -98,7 +99,7 @@ def linear_reg_pred(df, start_year, end_year, window_length=30, variable="Tropic
         slope = model.coef_
 
         # Predict future values based on the linear regression equation
-        prediction = f(m=slope, b=intercept, start=year, end=2025)  # Custom function f() for prediction
+        prediction = f(m=slope, b=intercept, start=year, end=year+window_length+duration)  # Custom function f() for prediction
         predictions.append(prediction)
         start_years.append(year)
     

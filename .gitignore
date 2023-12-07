@@ -1,2 +1,5 @@
 .DS_Store
 plots/
+.vscode
+.ipynb_checkpoints
+__pycache__
